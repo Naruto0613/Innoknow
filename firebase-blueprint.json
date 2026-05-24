@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account information, level progress, streak status, and subscription tier.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "paymentRef": { "type": "string" },
+        "plan": { "type": "string", "enum": ["trial", "basic", "pro", "premium"] },
+        "planStartDate": { "type": "string", "format": "date-time" },
+        "planExpiry": { "type": "string", "format": "date-time" },
+        "trialStartDate": { "type": "string", "format": "date-time" },
+        "trialExpiry": { "type": "string", "format": "date-time" },
+        "xp": { "type": "integer" },
+        "streak": { "type": "integer" },
+        "lastActiveDate": { "type": "string", "format": "date-time" },
+        "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "school": { "type": "string" },
+        "lessonsCompleted": { "type": "integer" },
+        "certificatesEarned": { "type": "array" },
+        "battleWins": { "type": "integer" },
+        "battleLosses": { "type": "integer" }
+      },
+      "required": ["uid", "email", "plan", "xp", "streak"]
+    },
+    "PaymentRequest": {
+      "title": "Payment Request",
+      "description": "Subscription request details that require verification and double administrator approvals.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "paymentRef": { "type": "string" },
+        "plan": { "type": "string", "enum": ["pro", "premium"] },
+        "amount": { "type": "integer" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "rejected"] },
+        "requestedAt": { "type": "string", "format": "date-time" },
+        "confirmedAt": { "type": "string", "format": "date-time" },
+        "confirmedBy": { "type": "array" }
+      },
+      "required": ["userId", "userEmail", "paymentRef", "plan", "amount", "status", "requestedAt"]
+    },
+    "Leaderboard": {
+      "title": "Leaderboard Participant",
+      "description": "Leaderboard ranking and point tallies indexed for speed.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "xp": { "type": "integer" },
+        "streak": { "type": "integer" },
+        "level": { "type": "string" },
+        "school": { "type": "string" },
+        "plan": { "type": "string" },
+        "dailyXP": { "type": "integer" },
+        "weeklyXP": { "type": "integer" },
+        "allTimeXP": { "type": "integer" }
+      },
+      "required": ["userId", "name", "xp", "allTimeXP"]
+    },
+    "Battle": {
+      "title": "Gamified Battle Duel",
+      "description": "Academic speed battle session record between players.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "player1": { "type": "string" },
+        "player2": { "type": "string" },
+        "type": { "type": "string", "enum": ["vocabulary", "grammar", "listening"] },
+        "winner": { "type": "string" },
+        "xpAwarded": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["player1", "player2", "type", "createdAt"]
+    },
+    "Certificate": {
+      "title": "Digital Performance Certificate",
+      "description": "Competency or milestone achievement credentials.",
+      "type": "object",
+      "properties": {
+        "certId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "type": { "type": "string", "enum": ["beginner", "intermediate", "advanced", "streak100"] },
+        "issuedAt": { "type": "string", "format": "date-time" },
+        "qrCode": { "type": "string" }
+      },
+      "required": ["certId", "userId", "userName", "type", "issuedAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User general profile tracking."
+    },
+    "paymentRequests/{userId}": {
+      "schema": "PaymentRequest",
+      "description": "Individual premium plan upgrade request tracking."
+    },
+    "leaderboard/{userId}": {
+      "schema": "Leaderboard",
+      "description": "Live leaderboard registers."
+    },
+    "battles/{battleId}": {
+      "schema": "Battle",
+      "description": "Academic multiplayer duel records."
+    },
+    "certificates/{certId}": {
+      "schema": "Certificate",
+      "description": "Earned certificates registers."
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "INNOKNOW",
+  "description": "A fun English learning platform with practice speaking with AI tutors, IELTS preparation, and personalized progress tracking.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
