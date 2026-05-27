@@ -2,7 +2,11 @@
  * AI Utility functions to communicate with the backend proxy
  */
 
-export async function getAIFeedback(userText: string, topic: string, level: string = "A1") {
+export async function getAIFeedback(
+  userText: string,
+  topic: string,
+  level: string = "A1",
+) {
   try {
     const response = await fetch("/api/ai/writing", {
       method: "POST",
@@ -47,7 +51,10 @@ export async function getSpeakingFeedback(transcript: string, context: string) {
   }
 }
 
-export async function generateCustomPrompt(prompt: string, systemInstruction?: string) {
+export async function generateCustomPrompt(
+  prompt: string,
+  systemInstruction?: string,
+) {
   try {
     const response = await fetch("/api/ai/generate", {
       method: "POST",

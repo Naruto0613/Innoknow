@@ -1,52 +1,68 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 1. Global Catch-All Deny Net
-    match /{document=**} {
-      allow read, write: if false;
+    // Helper rules functions
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return !isLoggedIn() || request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return !isLoggedIn() || (
+        request.auth.uid == 'cNdJNgCoqHT5tlOpzKO9dWyQJXd2' || 
+        request.auth.uid == 'NIucl1MhGdRCmq412yzAKH4mmn23' ||
+        request.auth.token.email == 'naranbadrakh1013@gmail.com' ||
+        request.auth.token.email == 'naranbadrakh@innoknow.mn' ||
+        request.auth.token.email == 'admin1@innoknow.mn'
+      );
+    }
+    function hasAccess() {
+      return !isLoggedIn() || isAdmin() || (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.planExpiry > request.time ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.trialExpiry > request.time
+      );
     }
 
-    // Since the application utilizes a custom client-side Auth session with localStorage,
-    // we authorize users based on internal fields matching the path ID to protect cross-record writing,
-    // bypassing direct cloud auth check requirements.
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    // Default global deny catch-all
+    match /{document=**} {
+      allow read, write: if !isLoggedIn() || isAdmin();
     }
 
     // USERS COLLECTION
     match /users/{userId} {
       allow read: if true;
-      allow create, update: if isValidId(userId) && request.resource.data.uid == userId;
-      allow delete: if true;
+      allow create, update: if !isLoggedIn() || request.auth.uid == userId || isAdmin();
+      allow delete: if !isLoggedIn() || isAdmin();
     }
 
     // PAYMENT REQUESTS
     match /paymentRequests/{userId} {
-      allow read: if true;
-      allow create, update: if isValidId(userId) && request.resource.data.userId == userId;
-      allow delete: if true;
+      allow read, write: if true;
     }
 
     // LEADERBOARD COLLECTION
     match /leaderboard/{userId} {
       allow read: if true;
-      allow create, update: if isValidId(userId) && request.resource.data.uid == userId;
-      allow delete: if true;
+      allow create, update: if !isLoggedIn() || isOwner(userId) || isAdmin();
+      allow delete: if !isLoggedIn() || isAdmin();
     }
 
     // BATTLES COLLECTION
     match /battles/{battleId} {
-      allow read: if true;
-      allow create, update: if true;
-      allow delete: if true;
+      allow read, write: if true;
     }
 
     // CERTIFICATES COLLECTION
     match /certificates/{certId} {
-      allow read: if true; // Certificates can be shared publicly via link
-      allow create, update: if true;
-      allow delete: if true;
+      allow read: if true;
+      allow create, update: if !isLoggedIn() || hasAccess() || isAdmin();
+      allow delete: if !isLoggedIn() || isAdmin();
+    }
+
+    // FEEDBACK COLLECTION
+    match /feedback/{feedbackId} {
+      allow read, write: if true;
     }
   }
 }

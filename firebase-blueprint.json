@@ -9,7 +9,10 @@
         "name": { "type": "string" },
         "email": { "type": "string" },
         "paymentRef": { "type": "string" },
-        "plan": { "type": "string", "enum": ["trial", "basic", "pro", "premium"] },
+        "plan": {
+          "type": "string",
+          "enum": ["trial", "basic", "pro", "premium"]
+        },
         "planStartDate": { "type": "string", "format": "date-time" },
         "planExpiry": { "type": "string", "format": "date-time" },
         "trialStartDate": { "type": "string", "format": "date-time" },
@@ -17,7 +20,10 @@
         "xp": { "type": "integer" },
         "streak": { "type": "integer" },
         "lastActiveDate": { "type": "string", "format": "date-time" },
-        "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "level": {
+          "type": "string",
+          "enum": ["A1", "A2", "B1", "B2", "C1", "C2"]
+        },
         "school": { "type": "string" },
         "lessonsCompleted": { "type": "integer" },
         "certificatesEarned": { "type": "array" },
@@ -37,12 +43,23 @@
         "paymentRef": { "type": "string" },
         "plan": { "type": "string", "enum": ["pro", "premium"] },
         "amount": { "type": "integer" },
-        "status": { "type": "string", "enum": ["pending", "confirmed", "rejected"] },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "confirmed", "rejected"]
+        },
         "requestedAt": { "type": "string", "format": "date-time" },
         "confirmedAt": { "type": "string", "format": "date-time" },
         "confirmedBy": { "type": "array" }
       },
-      "required": ["userId", "userEmail", "paymentRef", "plan", "amount", "status", "requestedAt"]
+      "required": [
+        "userId",
+        "userEmail",
+        "paymentRef",
+        "plan",
+        "amount",
+        "status",
+        "requestedAt"
+      ]
     },
     "Leaderboard": {
       "title": "Leaderboard Participant",
@@ -70,7 +87,10 @@
         "id": { "type": "string" },
         "player1": { "type": "string" },
         "player2": { "type": "string" },
-        "type": { "type": "string", "enum": ["vocabulary", "grammar", "listening"] },
+        "type": {
+          "type": "string",
+          "enum": ["vocabulary", "grammar", "listening"]
+        },
         "winner": { "type": "string" },
         "xpAwarded": { "type": "integer" },
         "createdAt": { "type": "string", "format": "date-time" }
@@ -85,11 +105,40 @@
         "certId": { "type": "string" },
         "userId": { "type": "string" },
         "userName": { "type": "string" },
-        "type": { "type": "string", "enum": ["beginner", "intermediate", "advanced", "streak100"] },
+        "type": {
+          "type": "string",
+          "enum": ["beginner", "intermediate", "advanced", "streak100"]
+        },
         "issuedAt": { "type": "string", "format": "date-time" },
         "qrCode": { "type": "string" }
       },
       "required": ["certId", "userId", "userName", "type", "issuedAt"]
+    },
+    "Feedback": {
+      "title": "User Feedback",
+      "description": "User suggestions, complaints, or bug reports submitted via feedback forms.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["bug", "suggestion", "compliment", "other"]
+        },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["new", "read", "resolved"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "userName",
+        "userEmail",
+        "type",
+        "message",
+        "status",
+        "createdAt"
+      ]
     }
   },
   "firestore": {
@@ -112,6 +161,10 @@
     "certificates/{certId}": {
       "schema": "Certificate",
       "description": "Earned certificates registers."
+    },
+    "feedback/{feedbackId}": {
+      "schema": "Feedback",
+      "description": "User feedback submissions."
     }
   }
 }
