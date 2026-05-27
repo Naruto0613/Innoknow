@@ -20,7 +20,7 @@ export default function CourseCard({
   return (
     <motion.div
       whileHover={{ y: -5 }}
-      className="bg-white rounded-5xl border border-zinc-100 shadow-sm overflow-hidden group hover:shadow-2xl transition-all"
+      className="bg-white rounded-[40px] border border-zinc-100 shadow-sm overflow-hidden group hover:shadow-2xl transition-all"
     >
       <div className="relative h-48 overflow-hidden">
         <img

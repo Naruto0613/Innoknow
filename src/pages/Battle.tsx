@@ -63,7 +63,7 @@ export default function Battle() {
   // Cooldown check on load
   useEffect(() => {
     if (!profile) return;
-    const isBasic = profile.plan === 'trial' ? false : profile.plan === 'basic';
+    const isBasic = false;
     if (!isBasic) return;
 
     const lastBattleStr = localStorage.getItem(`last_battle_time_${profile.uid}`);
