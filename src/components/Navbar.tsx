@@ -9,10 +9,8 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Dropdown states for Desktop
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  // Accordion states for Mobile
   const [mobileLessonsOpen, setMobileLessonsOpen] = useState(true);
   const [mobileBattleOpen, setMobileBattleOpen] = useState(true);
   const [mobileExtrasOpen, setMobileExtrasOpen] = useState(false);
@@ -45,8 +43,8 @@ export default function Navbar() {
   // 1. Download your image and save it as "logo.png" (or "logo.svg")
   // 2. Put it inside the "/public/" directory of your project
   // 3. Change "useCustomImageLogo" below to true
-  const useCustomImageLogo = false; // Set to true when you upload your image!
-  const logoSrc = "/logo.png"; // Set the filename of your logo image here
+  const useCustomImageLogo = true; // Set to true when you upload your image!
+  const logoSrc = "../../public/logo.png"; // Set the filename of your logo image here
 
   const Logo = () => (
     <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-3 group">
