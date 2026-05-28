@@ -187,33 +187,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
 
-          // Attempt loading from Firestore, fallback to LocalStorage
-          let fetchedProfile: UserProfile | null = null;
-          try {
-            const docRef = doc(db, 'users', parsedUser.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              fetchedProfile = docSnap.data() as UserProfile;
-            }
-          } catch (e) {
-            console.warn("Could not fetch user profile from Firestore, falling back to LocalStorage:", e);
-          }
+          // 1. Immediately resolve with local cached profile for instant 0ms startup
+          let cachedProfile: UserProfile | null = allProfiles[parsedUser.email] || null;
 
-          if (!fetchedProfile) {
-            fetchedProfile = allProfiles[parsedUser.email];
-          }
-
-          if (fetchedProfile) {
-            setProfile(fetchedProfile);
-            // Sync forward
-            try {
-              const docRef = doc(db, 'users', parsedUser.uid);
-              await setDoc(docRef, fetchedProfile, { merge: true });
-            } catch (e) {
-              console.warn("Could not sync profile to Firestore:", e);
-            }
+          if (cachedProfile) {
+            setProfile(cachedProfile);
           } else {
-            // Setup a standard default profile
+            // Setup a standard default local profile if not present locally
             const trialDuration = 72 * 60 * 60 * 1000; // 3 Days
             const trialStartDate = new Date().toISOString();
             const trialExpiryDate = new Date(Date.now() + trialDuration).toISOString();
@@ -244,13 +224,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             allProfiles[parsedUser.email] = newProfile;
             localStorage.setItem('innoknow_user_profiles', JSON.stringify(allProfiles));
             setProfile(newProfile);
-
-            try {
-              await setDoc(doc(db, 'users', newProfile.uid), newProfile);
-            } catch (e) {
-              console.warn("Firestore collection setDoc failed, offline fallback preserved.");
-            }
+            cachedProfile = newProfile;
           }
+
+          // Stop loading spinner immediately so the courses and lessons are visible even if Firestore is slow/offline!
+          setLoading(false);
+
+          // 2. Perform background asynchronous remote Firestore synchronization
+          Promise.resolve().then(async () => {
+            try {
+              const docRef = doc(db, 'users', parsedUser.uid);
+              const docSnap = await getDoc(docRef);
+              if (docSnap.exists()) {
+                const fetchedProfile = docSnap.data() as UserProfile;
+                setProfile(fetchedProfile);
+                allProfiles[parsedUser.email] = fetchedProfile;
+                localStorage.setItem('innoknow_user_profiles', JSON.stringify(allProfiles));
+              } else {
+                // Synchronize local fallback data to Firestore
+                if (cachedProfile) {
+                  await setDoc(docRef, cachedProfile, { merge: true });
+                }
+              }
+            } catch (fsErr) {
+              console.warn("Background firestore profiles state sync timed out/deferred (offline mode is active):", fsErr);
+            }
+          });
+
+          return; // Skip blocking resolver
         } catch (err) {
           console.error('Error loading current user profile:', err);
         }

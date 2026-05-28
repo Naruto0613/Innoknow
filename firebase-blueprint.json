@@ -139,6 +139,102 @@
         "status",
         "createdAt"
       ]
+    },
+    "Vocabulary": {
+      "title": "Vocabulary Word",
+      "description": "An English word, translation, difficulty badge, and context examples for study.",
+      "type": "object",
+      "properties": {
+        "word": { "type": "string" },
+        "translation": { "type": "string" },
+        "pos": { "type": "string", "enum": ["noun", "verb", "adj", "adv"] },
+        "level": {
+          "type": "string",
+          "enum": ["A1", "A2", "B1", "B2", "C1", "C2"]
+        },
+        "category": { "type": "string" },
+        "example": { "type": "string" },
+        "exampleMn": { "type": "string" },
+        "addedBy": { "type": "string" },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["word", "translation", "pos", "level", "category"]
+    },
+    "Lesson": {
+      "title": "English Curriculum Lesson",
+      "description": "Detailed multi-level core curriculum english lessons with key vocabulary & practice quizzes.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "titleMn": { "type": "string" },
+        "level": {
+          "type": "string",
+          "enum": ["A1", "A2", "B1", "B2", "C1", "C2"]
+        },
+        "skill": {
+          "type": "string",
+          "enum": [
+            "reading",
+            "listening",
+            "speaking",
+            "writing",
+            "grammar",
+            "vocabulary",
+            "Reading",
+            "Listening",
+            "Speaking",
+            "Writing",
+            "Grammar",
+            "Vocabulary"
+          ]
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["easy", "medium", "hard", "Easy", "Medium", "Hard"]
+        },
+        "xpReward": { "type": "integer" },
+        "estimatedTime": { "type": "integer" },
+        "description": { "type": "string" },
+        "content": { "type": "object" },
+        "isPremium": { "type": "boolean" },
+        "isPublished": { "type": "boolean" },
+        "addedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "title",
+        "level",
+        "skill",
+        "difficulty",
+        "xpReward",
+        "content"
+      ]
+    },
+    "Skill": {
+      "title": "Localized Focus Course Skill",
+      "description": "Interactive learning skills tasks, listening TTS passages, mini quizzes & prompts.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "level": {
+          "type": "string",
+          "enum": ["A1", "A2", "B1", "B2", "C1", "C2"]
+        },
+        "topic": { "type": "string" },
+        "instructionsMn": { "type": "string" },
+        "instructionsEn": { "type": "string" },
+        "xpReward": { "type": "integer" },
+        "timeLimit": { "type": "integer" },
+        "content": { "type": "object" },
+        "isPremium": { "type": "boolean" },
+        "isPublished": { "type": "boolean" },
+        "addedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "level", "xpReward", "isPublished"]
     }
   },
   "firestore": {
@@ -165,6 +261,18 @@
     "feedback/{feedbackId}": {
       "schema": "Feedback",
       "description": "User feedback submissions."
+    },
+    "vocabulary/{wordId}": {
+      "schema": "Vocabulary",
+      "description": "Curated vocabulary database."
+    },
+    "lessons/{lessonId}": {
+      "schema": "Lesson",
+      "description": "Custom administrator interactive lessons."
+    },
+    "skills/{skillId}": {
+      "schema": "Skill",
+      "description": "Dynamic exercise challenges for students."
     }
   }
 }

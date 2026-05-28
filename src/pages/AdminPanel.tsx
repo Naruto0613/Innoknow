@@ -3,6 +3,9 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth, ADMIN_UIDS, isUserAdmin } from '../hooks/useAuth';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../lib/firebase';
+import VocabularyManager from '../components/admin/VocabularyManager';
+import LessonManager from '../components/admin/LessonManager';
+import SkillsManager from '../components/admin/SkillsManager';
 import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { 
   Users, 
@@ -35,7 +38,25 @@ export default function AdminPanel() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
 
-  const [activeSubTab, setActiveSubTab] = useState<'pending' | 'active' | 'trials' | 'stats' | 'feedback'>('pending');
+  // Dialog / Modal States to bypass iframe confirm/alert blocks
+  const [alertState, setAlertState] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [confirmState, setConfirmState] = useState<{ message: string; action: () => void } | null>(null);
+
+  const showAlert = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setAlertState({ message, type });
+  };
+
+  const showConfirm = (message: string, action: () => void) => {
+    setConfirmState({ message, action });
+  };
+
+  // Local override of alert() to safely render custom modals inside sandboxed iframes
+  const alert = (message: string) => {
+    showAlert(message, 'info');
+  };
+
+  const [activeSubTab, setActiveSubTab] = useState<'pending' | 'active' | 'trials' | 'stats' | 'feedback' | 'content-manager'>('pending');
+  const [contentSubTab, setContentSubTab] = useState<'vocab' | 'lessons' | 'skills'>('vocab');
   const [requests, setRequests] = useState<any[]>([]);
   const [profilesList, setProfilesList] = useState<any[]>([]);
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
@@ -170,22 +191,23 @@ export default function AdminPanel() {
 
   // Delete Feedback
   const handleDeleteFeedback = async (feedbackId: string) => {
-    if (!window.confirm('Уг санал хүсэлтийг устгах уу?')) return;
-    try {
-      const docRef = doc(db, 'feedback', feedbackId);
-      await deleteDoc(docRef);
-      alert('Амжилттай устгагдлаа!');
+    showConfirm('Уг санал хүсэлтийг устгах уу?', async () => {
+      try {
+        const docRef = doc(db, 'feedback', feedbackId);
+        await deleteDoc(docRef);
+        showAlert('Амжилттай устгагдлаа!', 'success');
+        loadData();
+        return;
+      } catch (err) {
+        console.warn("Firestore feedback delete error:", err);
+      }
+      // Local fallback
+      const loaded = JSON.parse(localStorage.getItem('innoknow_feedbacks') || '[]');
+      const filtered = loaded.filter((f: any) => f.id !== feedbackId);
+      localStorage.setItem('innoknow_feedbacks', JSON.stringify(filtered));
+      showAlert('Устгагдлаа! (Local)', 'success');
       loadData();
-      return;
-    } catch (err) {
-      console.warn("Firestore feedback delete error:", err);
-    }
-    // Local fallback
-    const loaded = JSON.parse(localStorage.getItem('innoknow_feedbacks') || '[]');
-    const filtered = loaded.filter((f: any) => f.id !== feedbackId);
-    localStorage.setItem('innoknow_feedbacks', JSON.stringify(filtered));
-    alert('Устгагдлаа! (Local)');
-    loadData();
+    });
   };
 
   // Accept request under single admin approval
@@ -492,7 +514,7 @@ export default function AdminPanel() {
           </button>
           <button
             onClick={() => setActiveSubTab('feedback')}
-            className={`py-4 px-6 text-sm font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${activeSubTab === 'feedback' ? 'border-[#58007E] text-[#58007E]' : 'border-transparent text-zinc-400 hover:text-zinc-800'}`}
+            className={`py-4 px-6 text-sm font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${activeSubTab === 'feedback' ? 'border-[#58007E] text-[#58007E]' : 'border-transparent text-zinc-400 hover:text-zinc-805'}`}
           >
             <span>Санал хүсэлт</span>
             {unreadFeedbackCount > 0 && (
@@ -500,6 +522,12 @@ export default function AdminPanel() {
                 {unreadFeedbackCount}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveSubTab('content-manager')}
+            className={`py-4 px-6 text-sm font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${activeSubTab === 'content-manager' ? 'border-[#58007E] text-[#58007E]' : 'border-transparent text-zinc-400 hover:text-zinc-800'}`}
+          >
+            Content Manager
           </button>
         </div>
 
@@ -952,10 +980,105 @@ export default function AdminPanel() {
                 )}
               </motion.div>
             )}
+
+            {activeSubTab === 'content-manager' && (
+              <motion.div
+                key="content-manager"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6 text-left"
+              >
+                {/* Clean Content and Curriculum Tabs */}
+                <div className="flex bg-slate-100/60 p-1.5 rounded-2xl w-fit gap-1 border border-slate-200/50">
+                  <button
+                    onClick={() => setContentSubTab('vocab')}
+                    className={`px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${contentSubTab === 'vocab' ? 'bg-[#58007E] text-white shadow-md' : 'text-slate-500 hover:bg-slate-200/50'}`}
+                  >
+                    📚 Vocabulary
+                  </button>
+                  <button
+                    onClick={() => setContentSubTab('lessons')}
+                    className={`px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${contentSubTab === 'lessons' ? 'bg-[#58007E] text-white shadow-md' : 'text-slate-500 hover:bg-slate-200/50'}`}
+                  >
+                    📖 Lessons
+                  </button>
+                  <button
+                    onClick={() => setContentSubTab('skills')}
+                    className={`px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${contentSubTab === 'skills' ? 'bg-[#58007E] text-white shadow-md' : 'text-slate-500 hover:bg-slate-200/50'}`}
+                  >
+                    🎯 Skills
+                  </button>
+                </div>
+
+                {/* Specific active editor content panels */}
+                <div className="pt-2">
+                  {contentSubTab === 'vocab' && <VocabularyManager />}
+                  {contentSubTab === 'lessons' && <LessonManager />}
+                  {contentSubTab === 'skills' && <SkillsManager />}
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
       </div>
+
+      {/* Custom Alert Modal */}
+      {alertState && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[24px] p-6 max-w-sm w-full shadow-2xl border border-slate-100 text-center space-y-4 text-slate-900">
+            <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center ${
+              alertState.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 
+              alertState.type === 'error' ? 'bg-red-100 text-red-600' : 'bg-[#58007E]/10 text-[#58007E]'
+            }`}>
+              {alertState.type === 'success' ? <Check size={24} /> : 
+               alertState.type === 'error' ? <X size={24} /> : <AlertCircle size={24} />}
+            </div>
+            <p className="text-sm font-bold leading-relaxed">
+              {alertState.message}
+            </p>
+            <button
+              onClick={() => setAlertState(null)}
+              className="w-full py-2.5 bg-[#58007E] text-white rounded-xl text-xs font-black tracking-wider uppercase hover:bg-[#420060] transition-all cursor-pointer"
+            >
+              Ойлголоо
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirm Modal */}
+      {confirmState && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[24px] p-6 max-w-sm w-full shadow-2xl border border-slate-100 text-center space-y-4 text-slate-900">
+            <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 mx-auto flex items-center justify-center">
+              <AlertCircle size={24} className="text-amber-600" />
+            </div>
+            <h4 className="text-base font-black">Баталгаажуулалт</h4>
+            <p className="text-sm font-bold leading-relaxed text-slate-650">
+              {confirmState.message}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmState(null)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black tracking-wider uppercase transition-all cursor-pointer"
+              >
+                Үгүй
+              </button>
+              <button
+                onClick={() => {
+                  confirmState.action();
+                  setConfirmState(null);
+                }}
+                className="flex-1 py-2.5 bg-red-650 hover:bg-red-705 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black tracking-wider uppercase transition-all cursor-pointer"
+              >
+                Тийм, устгах
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

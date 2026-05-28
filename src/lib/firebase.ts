@@ -1,12 +1,14 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Initialize Firebase App gracefully
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); /* CRITICAL: The app will break without this line */
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+}, firebaseConfig.firestoreDatabaseId); /* CRITICAL: The app will break without this line */
 export const auth = getAuth(app);
 
 // Firestore Error Handler as specified in SKILL.md

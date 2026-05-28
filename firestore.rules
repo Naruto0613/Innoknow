@@ -64,5 +64,23 @@ service cloud.firestore {
     match /feedback/{feedbackId} {
       allow read, write: if true;
     }
+
+    // VOCABULARY COLLECTION
+    match /vocabulary/{wordId} {
+      allow read: if isLoggedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // LESSONS COLLECTION
+    match /lessons/{lessonId} {
+      allow read: if hasAccess();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // SKILLS COLLECTION
+    match /skills/{skillId} {
+      allow read: if hasAccess();
+      allow create, update, delete: if isAdmin();
+    }
   }
 }

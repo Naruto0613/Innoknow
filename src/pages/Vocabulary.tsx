@@ -1,7 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../hooks/useAuth';
 import { getVocabularyWords, VocabularyWord } from '../data/vocabularyData';
+import { db } from '../lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 import { 
   Search, 
   Brain, 
@@ -22,9 +24,31 @@ import {
 
 export default function Vocabulary() {
   const { user, profile, updateProfile } = useAuth();
+  const [dbWords, setDbWords] = useState<VocabularyWord[]>([]);
+
+  useEffect(() => {
+    const fetchDbWords = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'vocabulary'));
+        const list: VocabularyWord[] = [];
+        snap.forEach(d => {
+          list.push({ id: d.id, ...d.data() } as VocabularyWord);
+        });
+        setDbWords(list);
+      } catch (e) {
+        console.warn("Could not load dynamic vocabulary from Firestore:", e);
+      }
+    };
+    fetchDbWords();
+  }, []);
   
-  // Loading all 500+ words
-  const allWords = useMemo(() => getVocabularyWords(), []);
+  // Loading all 500+ words merged with new admin database entries
+  const allWords = useMemo(() => {
+    const staticWords = getVocabularyWords();
+    const existingSet = new Set(dbWords.map(w => w.word.toLowerCase().trim()));
+    const filteredStatic = staticWords.filter(w => !existingSet.has(w.word.toLowerCase().trim()));
+    return [...dbWords, ...filteredStatic];
+  }, [dbWords]);
 
   // State
   const [activeTab, setActiveTab] = useState<'all' | 'learned'>('all');
