@@ -88,7 +88,7 @@ export default function Pricing() {
     if (!selectedPlan) return;
     setSubmittingPayment(true);
 
-    const price = selectedPlan === 'pro' ? 19999 : 39999;
+    const price = selectedPlan === 'pro' ? 9999 : 19999;
     const paymentReq = {
       userId: profile.uid,
       userName: profile.displayName || 'Сурагч',
@@ -311,7 +311,7 @@ export default function Pricing() {
                     <div className="relative group bg-slate-50 hover:bg-[#FDFCFB] p-4 rounded-2xl border border-slate-100 transition-all flex items-center justify-between">
                       <div>
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider mb-0.5">Төлбөрийн дүн</span>
-                        <span className="text-sm font-black text-slate-800 leading-none">{selectedPlan === 'pro' ? '19999₮' : '39999₮'}</span>
+                        <span className="text-sm font-black text-slate-800 leading-none">{selectedPlan === 'pro' ? '9999₮' : '19999₮'}</span>
                       </div>
                       <button
                         onClick={() => copyToClipboard(selectedPlan === 'pro' ? '19999' : '39999', 'amount')}
