@@ -34,8 +34,8 @@ export default function Pricing() {
     {
       id: 'pro' as const,
       name: 'Pro',
-      priceNum: 19999,
-      priceLabel: '19,999₮/сарын',
+      priceNum: 9999,
+      priceLabel: '9,999₮/сарын',
       description: 'Ахисан түвшний цогц дасгал, хязгааргүй сургалт',
       features: [
         'Unlimited lessons (Хязгааргүй хичээл)',
@@ -53,8 +53,8 @@ export default function Pricing() {
     {
       id: 'premium' as const,
       name: 'Premium',
-      priceNum: 39999,
-      priceLabel: '39,999₮/сарын',
+      priceNum: 19999,
+      priceLabel: '19,999₮/сарын',
       description: 'IELTS бэлтгэл, VIP зөвлөгөө, AI багшийн симуляци',
       features: [
         'Everything in Pro (Pro-ийн бүх эрх)',
